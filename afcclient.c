@@ -227,21 +227,23 @@ int put_afc_path(afc_client_t afc, const char *src, const char *dst)
         afc_error_t err = afc_file_open(afc, dst, AFC_FOPEN_WRONLY, &handle);
 
         if (err == AFC_E_SUCCESS) {
-            char buf[CHUNKSZ];
-            uint32_t bytes_read=0;
-            size_t totbytes=0;
+            off_t bytes_written = 0;
+            err = afc_file_write_from_fd(afc, handle, fileno(inf), 0, &bytes_written);
+//            char buf[CHUNKSZ];
+//            uint32_t bytes_read=0;
+//            size_t totbytes=0;
 
-            while(err==AFC_E_SUCCESS && (bytes_read=fread(buf, 1, CHUNKSZ, inf)) > 0) {
-                uint32_t bytes_written=0;
-                err=afc_file_write(afc, handle, buf, bytes_read, &bytes_written);
-                totbytes += bytes_written;
-            }
+//            while(err==AFC_E_SUCCESS && (bytes_read=fread(buf, 1, CHUNKSZ, inf)) > 0) {
+//                uint32_t bytes_written=0;
+//                err=afc_file_write(afc, handle, buf, bytes_read, &bytes_written);
+//                totbytes += bytes_written;
+//            }
 
             if (err) {
                 fprintf(stderr, "Error: Encountered error while writing %s: %s\n", src, idev_afc_strerror(err));
-                fprintf(stderr, "Warning! - %lu bytes read - incomplete data in %s may have resulted.\n", totbytes, dst);
+                fprintf(stderr, "Warning! - %lld bytes read - incomplete data in %s may have resulted.\n", bytes_written, dst);
             } else {
-                printf("Uploaded %lu bytes to %s\n", totbytes, dst);
+                printf("Uploaded %lld bytes to %s\n", bytes_written, dst);
                 ret=EXIT_SUCCESS;
             }
 
